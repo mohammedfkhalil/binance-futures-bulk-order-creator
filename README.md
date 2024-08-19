@@ -1,5 +1,5 @@
 # Binance Futures Bulk Order Creator
-![Screenshot 2024-08-18 230445](https://github.com/user-attachments/assets/52ba85b2-5bd5-470e-979b-2e435c9a2fa0)
+![binance_futures_bulk_order_creator](https://github.com/user-attachments/assets/47660686-f5b7-4b99-a870-ddee6d4081a1)
 
 This is a web-based application that allows users to create multiple orders on Binance Futures simultaneously. It provides a user-friendly interface for inputting API credentials, selecting trading pairs, specifying price ranges, and creating either long or short orders in bulk.
 

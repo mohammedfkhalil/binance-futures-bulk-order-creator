@@ -13,6 +13,7 @@
   - Support for both limit and stop-limit orders
   - Reduce-only order option
   - Responsive design for various screen sizes
+  - Cancel all open orders for selected symbol
 
   Note: This application requires a valid Binance Futures API key and secret to function properly.
   Use at your own risk and ensure you understand the implications of bulk order creation in cryptocurrency trading.
@@ -46,6 +47,8 @@
         --long-button-hover: rgb(16, 102, 44);
         --short-button: #d12b41;
         --short-button-hover: #a52234;
+        --cancel-button: #ff9800;
+        --cancel-button-hover: #f57c00;
         --border-radius: 8px;
       }
       body {
@@ -127,6 +130,12 @@
       }
       #shortButton:hover {
         background-color: var(--short-button-hover);
+      }
+      #cancelOrdersButton {
+        background-color: var(--cancel-button);
+      }
+      #cancelOrdersButton:hover {
+        background-color: var(--cancel-button-hover);
       }
       #result {
         white-space: pre-wrap;
@@ -210,7 +219,8 @@
         .button-container {
           flex-direction: row;
         }
-        #longButton {
+        #longButton,
+        #shortButton {
           margin-right: 8px;
         }
         .slider-container {
@@ -295,6 +305,9 @@
           <div class="button-container">
             <button type="submit" id="longButton">Create Long Orders</button>
             <button type="submit" id="shortButton">Create Short Orders</button>
+            <button type="button" id="cancelOrdersButton">
+              Cancel All Open Orders
+            </button>
           </div>
         </form>
       </div>
@@ -517,6 +530,8 @@
           document.getElementById("positionSizeSlider");
         const symbolSelect = document.getElementById("symbol");
         const openPositionsSelect = document.getElementById("openPositions");
+        const cancelOrdersButton =
+          document.getElementById("cancelOrdersButton");
 
         createTradingViewWidget(symbolSelect.value);
 
@@ -547,6 +562,8 @@
           updatePriceLimits();
           createTradingViewWidget(symbolSelect.value);
         });
+
+        cancelOrdersButton.addEventListener("click", cancelAllOpenOrders);
       });
 
       function generateSignature(queryString, secretKey) {
@@ -693,6 +710,42 @@
           console.log("Order submission results:", results);
         } catch (error) {
           console.error("Error submitting orders:", error);
+          document.getElementById(
+            "result"
+          ).textContent = `Error: ${error.message}`;
+        }
+      }
+
+      async function cancelAllOpenOrders() {
+        const apiKey = document.getElementById("apiKey").value;
+        const secretKey = document.getElementById("secretKey").value;
+        const symbol = document.getElementById("symbol").value;
+
+        const timestamp = Date.now();
+        const queryString = `symbol=${symbol}&timestamp=${timestamp}`;
+        const signature = generateSignature(queryString, secretKey);
+
+        try {
+          const response = await fetch(
+            `https://fapi.binance.com/fapi/v1/allOpenOrders?${queryString}&signature=${signature}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-MBX-APIKEY": apiKey,
+              },
+            }
+          );
+
+          const result = await response.json();
+          document.getElementById("result").textContent = JSON.stringify(
+            result,
+            null,
+            2
+          );
+          console.log("Cancel all open orders result:", result);
+        } catch (error) {
+          console.error("Error cancelling all open orders:", error);
           document.getElementById(
             "result"
           ).textContent = `Error: ${error.message}`;
